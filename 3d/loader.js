@@ -1,5 +1,5 @@
-import { AmbientLight, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
-import { OBJLoader } from "./OBJLoader";
+import { AmbientLight, PerspectiveCamera, Scene, Vector3, WebGLRenderer, TextureLoader, MeshStandardMaterial } from 'three';
+import { OBJLoader } from "./libs/OBJLoader";
 
 export class Loader {
 
@@ -9,6 +9,7 @@ export class Loader {
         this.camera = new PerspectiveCamera(64, innerWidth / innerHeight, .1, 1000)
         this.lump = new AmbientLight(0xAAAAAA, 1.5)
         this.lump.position.set(0, 5, 0)
+        this.textureLoader = new TextureLoader()
 
         this.renderer = new WebGLRenderer()
         this.renderer.setSize(innerWidth, innerHeight)
@@ -20,14 +21,26 @@ export class Loader {
 
     init() {
         this.scene.add(this.lump)
-        this.camera.position.z = 5;
+        this.camera.position.z = -45;
         this.camera.lookAt(new Vector3(0, 0, 0))
+        this.loader.load('3d/models/bochka.obj', (bochkaScene) => {
+            bochkaScene.scale.x = 1;
+            bochkaScene.scale.y = 1;
+            bochkaScene.scale.z = 1;
+            this.scene.add(bochkaScene);
 
-        this.loader.load('3d/house.obj', (object) => {
-            object.scale.x = 1;
-            object.scale.y = 1;
-            object.scale.z = 1;
-            this.scene.add(object);
+            this.textureLoader.load('3d/texture/main.png', (texture) => {
+                this.material = new MeshStandardMaterial({
+                    map: texture
+                })
+
+                // установка материала на модель
+                // traverse - проходит по всем детям в сцене и на все меши ставит this.material
+                bochkaScene.traverse(object => {
+                    object.material = this.material
+                })
+
+            })
         })
 
     }
@@ -39,4 +52,3 @@ export class Loader {
     }
 
 }
-
